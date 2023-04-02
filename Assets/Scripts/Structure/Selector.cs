@@ -23,7 +23,7 @@ public class Selector : MonoBehaviour
         if (plane.Raycast(ray,out rayDistance))
         {
             Vector3 newPos = ray.GetPoint(rayDistance);
-            newPos = new Vector3(newPos.x, 0.0f,newPos.z);
+            newPos = new Vector3(Mathf.RoundToInt(newPos.x / gridSize)*gridSize,0.0f,Mathf.RoundToInt(newPos.z / gridSize) * gridSize);
 
             return newPos;
         }
