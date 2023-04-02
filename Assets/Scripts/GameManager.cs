@@ -9,6 +9,9 @@ public class GameManager : MonoBehaviour
 
     public GameObject spawnPos;
     public GameObject rallyPos;
+    
+    //resource
+    public int money, staff, wheat, melon, corn, apple;
 
     public static GameManager instance;
 
@@ -17,12 +20,9 @@ public class GameManager : MonoBehaviour
     {
         instance = this;
         GenerateCandidate();
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        money = 25000;
+        UI.instance.UpdateHeaderPanel();
     }
 
     private void GenerateCandidate()
