@@ -20,7 +20,6 @@ public class GameManager : MonoBehaviour
     {
         instance = this;
         GenerateCandidate();
-
         money = 25000;
         UI.instance.UpdateHeaderPanel();
     }
