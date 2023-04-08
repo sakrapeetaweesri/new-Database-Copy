@@ -33,6 +33,8 @@ public class Staff : MonoBehaviour
     [SerializeField] private NavMeshAgent navAgent;
     public NavMeshAgent NavAgent { get { return navAgent; } }
 
+    public GameObject Workplace;
+    
     void Awake()
     {
         navAgent = GetComponent<NavMeshAgent>();

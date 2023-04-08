@@ -13,8 +13,8 @@ public class UI : MonoBehaviour
     public TMP_Text melonText;
     public TMP_Text cornText;
     public TMP_Text appleText;
-    
-    void Start()
+
+    void Awake()
     {
         instance = this;
     }
@@ -29,4 +29,5 @@ public class UI : MonoBehaviour
     {
         moneyText.text = GameManager.instance.money.ToString();
     }
+    
 }
