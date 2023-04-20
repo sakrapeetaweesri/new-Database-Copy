@@ -3,47 +3,83 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+ 
+
+ 
+
 public enum UnitState
 {
     Idle,
     Walk,
-    Harvest,
+    Plow,
     Sow,
     Water,
-    Plow
+    Harvest
 }
+
+ 
+
+ 
 
 public class Staff : MonoBehaviour
 {
     private int _id;
     public int ID { get { return _id; } set { _id = value; } }
 
+ 
+
     private int charSkinId;
     public int CharSkinID { get { return charSkinId; } set { charSkinId = value; } }
     public GameObject[] charSkin;
 
+ 
+
     public string staffName;
     public int dailyWage;
+
+ 
 
     //Animation
     [SerializeField] private UnitState state;
     public UnitState State { get { return state; } set { state = value; } }
 
+ 
+
     //Nav Agent
     [SerializeField] private NavMeshAgent navAgent;
     public NavMeshAgent NavAgent { get { return navAgent; } }
 
+ 
+
     public GameObject Workplace;
-    
+
+ 
+
     void Awake()
     {
         navAgent = GetComponent<NavMeshAgent>();
     }
 
+ 
+
     void Update()
     {
-        CheckStop();
+        SwitchStaffState();
     }
+
+ 
+
+    private void SwitchStaffState()
+    {
+        switch (state)
+        {
+            case UnitState.Walk:
+                CheckStop();
+                break;
+        }
+    }
+
+ 
 
     public void InitCharID(int id)
     {
@@ -52,6 +88,8 @@ public class Staff : MonoBehaviour
         staffName = "XXXX";
         dailyWage = Random.Range(80, 125);
     }
+
+ 
 
     public void ChangeCharSkin()
     {
@@ -64,9 +102,13 @@ public class Staff : MonoBehaviour
         }
     }
 
+ 
+
     public void CheckStop()
     {
         float dist = Vector3.Distance(transform.position, navAgent.destination);
+
+ 
 
         if (dist <= 3f)
         {
@@ -75,11 +117,61 @@ public class Staff : MonoBehaviour
         }
     }
 
+ 
+
     public void SetToWalk(Vector3 dest)
     {
         state = UnitState.Walk;
 
+ 
+
         navAgent.SetDestination(dest);
         navAgent.isStopped = false;
+    }
+
+ 
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.gameObject != Workplace)
+            return;
+
+ 
+
+        Farm farm = other.gameObject.GetComponent<Farm>();
+
+ 
+
+        if (farm != null && farm.hp < 100 && navAgent.isStopped == true)
+        {
+            switch (farm.stage)
+            {
+                case FarmStage.plowing:
+                    state = UnitState.Plow;
+                    farm.CheckTimeForWork();
+                    break;
+
+ 
+
+                case FarmStage.sowing:
+                    state = UnitState.Sow;
+                    farm.CheckTimeForWork();
+                    break;
+
+ 
+
+                case FarmStage.maintaining:
+                    state = UnitState.Water;
+                    farm.CheckTimeForWork();
+                    break;
+
+ 
+
+                case FarmStage.harvesting:
+                    state = UnitState.Harvest;
+                    farm.CheckTimeForWork();
+                    break;
+            }
+        }
     }
 }

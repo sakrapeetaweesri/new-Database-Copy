@@ -1,243 +1,260 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
- 
+ 
 
 public class StructureManager : MonoBehaviour
 {
-    [SerializeField] private bool isConstructing;
+    [SerializeField] private bool isConstructing;
 
- 
+ 
 
-    public GameObject curBuildingPrefab;
-    public GameObject buildingParent;
+    public GameObject curBuildingPrefab;
+    public GameObject buildingParent;
 
- 
+ 
 
-    [SerializeField] private Vector3 cursorPos;
-    [SerializeField] private GameObject buildingCursor;
-    [SerializeField] private GameObject gridPlane;
+    [SerializeField] private Vector3 cursorPos;
+    [SerializeField] private GameObject buildingCursor;
+    [SerializeField] private GameObject gridPlane;
 
- 
+ 
 
-    private GameObject ghostBuilding;
+    private GameObject ghostBuilding;
 
- 
+ 
 
-    //Working at any farm
-    [SerializeField] private GameObject curStructure;
-    public GameObject CurStructure { get { return curStructure; } set { curStructure = value; } }
+    //Working at any farm
+    [SerializeField] private GameObject curStructure;
+    public GameObject CurStructure { get { return curStructure; } set { curStructure = value; } }
 
- 
+ 
 
-    //Demolish
-    [SerializeField] private bool isDemolishing;
-    public GameObject demolishCursor;
+    //Demolish
+    [SerializeField] private bool isDemolishing;
+    public GameObject demolishCursor;
 
- 
+ 
 
-    private Camera cam;
+    private Camera cam;
 
- 
+ 
 
-    void Awake()
-    {
-        cam = Camera.main;
-    }
+    void Awake()
+    {
+        cam = Camera.main;
+    }
 
- 
+ 
 
-    // Update is called once per frame
-    void Update()
-    {
-        cursorPos = Selector.instance.GetCurTilePosition();
+    // Update is called once per frame
+    void Update()
+    {
+        cursorPos = Selector.instance.GetCurTilePosition();
 
- 
+ 
 
-        if (isConstructing)
-        {
-            buildingCursor.transform.position = cursorPos;
-            gridPlane.SetActive(true);
-        }
-        else if (isDemolishing)
-        {
-            demolishCursor.transform.position = cursorPos;
-            gridPlane.SetActive(true);
-        }
-        else
-        {
-            gridPlane.SetActive(false);
-        }
+        if (isConstructing)
+        {
+            buildingCursor.transform.position = cursorPos;
+            gridPlane.SetActive(true);
+        }
+        else if (isDemolishing)
+        {
+            demolishCursor.transform.position = cursorPos;
+            gridPlane.SetActive(true);
+        }
+        else
+        {
+            gridPlane.SetActive(false);
+        }
 
- 
+ 
 
-        //Left Click in different mode
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (isConstructing)
-                PlaceBuilding();
-            else if (isDemolishing)
-                Demolish();
-            else
-                CheckLeftClick(Input.mousePosition);
-        }
-    }
+        //Left Click in different mode
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (isConstructing)
+                PlaceBuilding();
+            else if (isDemolishing)
+                Demolish();
+            else
+                CheckLeftClick(Input.mousePosition);
+        }
 
- 
+ 
 
-    public void BeginNewBuildingPlacement(GameObject prefab) //map w button
-    {
-        isConstructing = true;
-        curBuildingPrefab = prefab;
-        ghostBuilding = Instantiate(curBuildingPrefab, cursorPos, Quaternion.identity);
-        ghostBuilding.GetComponent<FindBuildingSite>().plane.SetActive(true);
+        //Cancel Building/Demolishing
+        if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
+        {
+            CancelConstruction();
 
- 
+ 
 
-        buildingCursor = ghostBuilding;
-        buildingCursor.SetActive(true);
-    }
+            if (isDemolishing)
+            {
+                ToggleDemolish();
+            }
+        }
+    }
 
- 
+ 
 
-    private bool CheckMoney(GameObject obj)
-    {
-        int cost = obj.GetComponent<Structure>().costToBuild;
+    public void BeginNewBuildingPlacement(GameObject prefab) //map w button
+    {
+        isConstructing = true;
+        curBuildingPrefab = prefab;
+        ghostBuilding = Instantiate(curBuildingPrefab, cursorPos, Quaternion.identity);
+        ghostBuilding.GetComponent<FindBuildingSite>().plane.SetActive(true);
 
- 
+ 
 
-        if (cost <= GameManager.instance.money)
-            return true;
-        else
-            return false;
-    }
+        buildingCursor = ghostBuilding;
+        buildingCursor.SetActive(true);
+    }
 
- 
+ 
 
-    private void DeductMoney(int cost)
-    {
-        GameManager.instance.money -= cost;
-        UI.instance.UpdateHeaderPanel();
-    }
+    private bool CheckMoney(GameObject obj)
+    {
+        int cost = obj.GetComponent<Structure>().costToBuild;
 
- 
+ 
 
-    private void PlaceBuilding()
-    {
-        if (CheckMoney(curBuildingPrefab) == false)
-            return;
-        if (buildingCursor.GetComponent<FindBuildingSite>().CanBuild == false)
-            return;
+        if (cost <= GameManager.instance.money)
+            return true;
+        else
+            return false;
+    }
 
- 
+ 
 
-        GameObject structureObj = Instantiate(curBuildingPrefab, cursorPos,
-                                            Quaternion.identity, buildingParent.transform);
+    private void DeductMoney(int cost)
+    {
+        GameManager.instance.money -= cost;
+        UI.instance.UpdateHeaderPanel();
+    }
 
- 
+ 
 
-        Structure s = structureObj.GetComponent<Structure>();
-        GameManager.instance.structures.Add(s);
-        DeductMoney(s.costToBuild);
+    private void PlaceBuilding()
+    {
+        if (CheckMoney(curBuildingPrefab) == false)
+            return;
+        if (buildingCursor.GetComponent<FindBuildingSite>().CanBuild == false)
+            return;
 
- 
+ 
 
-        if (!Input.GetKey(KeyCode.LeftShift))
-            CancelConstruction();
-    }
+        GameObject structureObj = Instantiate(curBuildingPrefab, cursorPos,
+                                            Quaternion.identity, buildingParent.transform);
 
- 
+ 
 
-    private void CancelConstruction()
-    {
-        isConstructing = false;
-        gridPlane.SetActive(false);
+        Structure s = structureObj.GetComponent<Structure>();
+        GameManager.instance.structures.Add(s);
+        DeductMoney(s.costToBuild);
 
- 
+ 
 
-        if (buildingCursor != null)
-            buildingCursor.SetActive(false);
-        if (ghostBuilding != null)
-            Destroy(ghostBuilding);
-    }
+        if (!Input.GetKey(KeyCode.LeftShift))
+            CancelConstruction();
+    }
 
- 
+ 
 
-    public void ToggleDemolish()
-    {
-        isConstructing = false;
-        isDemolishing = !isDemolishing;
+    private void CancelConstruction()
+    {
+        isConstructing = false;
+        gridPlane.SetActive(false);
 
- 
+ 
 
-        gridPlane.SetActive(isDemolishing);
+        if (buildingCursor != null)
+            buildingCursor.SetActive(false);
+        if (ghostBuilding != null)
+            Destroy(ghostBuilding);
+    }
 
- 
+ 
 
-        demolishCursor.SetActive(isDemolishing);
-        demolishCursor.transform.position = new Vector3(0f, -99f, 0f);
-    }
+    public void ToggleDemolish()
+    {
+        isConstructing = false;
+        isDemolishing = !isDemolishing;
 
- 
+ 
 
-    public void Demolish()
-    {
-        GameObject colliding = demolishCursor.GetComponent<Demolish>().Colliding;
-        if (colliding == null)
-            return;
+        gridPlane.SetActive(isDemolishing);
 
- 
+ 
 
-        Structure s = GameManager.instance.structures.Find(x =>
-                                               x.transform.position == colliding.transform.position);
+        demolishCursor.SetActive(isDemolishing);
+        demolishCursor.transform.position = new Vector3(0f, -99f, 0f);
+    }
 
- 
+ 
 
-        if (s != null)
-        {
-            GameManager.instance.structures.Remove(s);
-            Destroy(s.gameObject);
-        }
+    public void Demolish()
+    {
+        GameObject colliding = demolishCursor.GetComponent<Demolish>().Colliding;
+        if (colliding == null)
+            return;
 
- 
+ 
 
-        UI.instance.UpdateHeaderPanel();
-    }
+        Structure s = GameManager.instance.structures.Find(x =>
+                                               x.transform.position == colliding.transform.position);
 
- 
+ 
 
-    public void CheckLeftClick(Vector2 mousePos)
-    {
-        Ray ray = cam.ScreenPointToRay(mousePos);
-        RaycastHit hit;
+        if (s != null)
+        {
+            GameManager.instance.structures.Remove(s);
+            Destroy(s.gameObject);
+        }
 
- 
+ 
 
-        if (Physics.Raycast(ray, out hit, 100))
-        {
-            //Mouse over UI
-            if (EventSystem.current.IsPointerOverGameObject())
-            {
-                return;
-            }
+        UI.instance.UpdateHeaderPanel();
+    }
 
- 
+ 
 
-            curStructure = hit.collider.gameObject;
-            switch(hit.collider.tag)
-            {
-                case "Farm":
-                    Structure s = CurStructure.GetComponent<Structure>();
-                    break;
-            }
-        }
-    }
+    public void CheckLeftClick(Vector2 mousePos)
+    {
+        Ray ray = cam.ScreenPointToRay(mousePos);
+        RaycastHit hit;
+
+ 
+
+        if (Physics.Raycast(ray, out hit, 100))
+        {
+            //Mouse over UI
+            if (EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+
+ 
+
+            curStructure = hit.collider.gameObject;
+            switch (hit.collider.tag)
+            {
+                case "Farm":
+                    Structure s = CurStructure.GetComponent<Structure>();
+                    UI.instance.ToggleFarmPanel(true);
+                    break;
+            }
+        }
+    }
+
+ 
 
     public void CallStaff()
     {
-        GameManager.instance.SendStaff(CurStructure);
+        GameManager.instance.SendStaff(curStructure);
     }
 }

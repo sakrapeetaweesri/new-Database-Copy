@@ -1725,7 +1725,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &588416506
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2848,6 +2848,8 @@ MonoBehaviour:
   melonText: {fileID: 920655610}
   cornText: {fileID: 825183684}
   appleText: {fileID: 1654053159}
+  FarmUI: {fileID: 0}
+  FarmPanel: {fileID: 588416505}
 --- !u!1 &1067807560
 GameObject:
   m_ObjectHideFlags: 0
@@ -3070,7 +3072,7 @@ MonoBehaviour:
   staffParent: {fileID: 828607944}
   spawnPos: {fileID: 581773536}
   rallyPos: {fileID: 1099072794}
-  money: 0
+  money: 25000
   staffNum: 0
   wheat: 0
   melon: 0
@@ -3107,7 +3109,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isConstructing: 0
-  curBuildingPrefab: {fileID: 7885916272911117536, guid: 3d44bf1f21c92324d9ac5f9e8bbdd298, type: 3}
+  curBuildingPrefab: {fileID: 0}
   buildingParent: {fileID: 1799925934}
   cursorPos: {x: 0, y: 0, z: 0}
   buildingCursor: {fileID: 0}
